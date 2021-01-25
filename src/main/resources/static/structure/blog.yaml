@@ -1,0 +1,323 @@
+openapi: 3.0.0
+info:
+  title: Simple Blog API
+  description: An simple swagger demo with blog's APIs.
+  version: '1.0.0'
+servers:
+  - description: Used localhost server for easier demo
+    url: http://localhost:8080/
+tags:
+  - name: user
+    description: All operation relative with user
+  - name: post
+    description: All operation relative with post
+  - name: comment
+    description: All operation relative with comment
+
+paths:
+  /users:
+    get:
+      tags:
+        - user
+      summary: Get users.
+      parameters:
+        - in: query
+          name: size
+          description: Size of page, represent how many items should be show in per page.
+          schema:
+            type: integer
+        - in: query
+          name: page
+          description: For pagination, show all user in specific page with amount that defined in "size".
+            The first page will be 0.
+          example: "0"
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Returns an array of users.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/404EntitiesNotFound'
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: Give an user object to request body to create a new user.
+      requestBody:
+        $ref: '#/components/requestBodies/UserRequestBody'
+      responses:
+        '201':
+          description: Successful create user.
+
+  /users/{userId}:
+    parameters:
+      - in: path
+        name: userId
+        description: User id
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - user
+      summary: Get user by specific user id.
+      description: User id is required and should not be empty.
+      responses:
+        200:
+          description: Return an user has id that equal with param.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          $ref: '#/components/responses/404EntitiesNotFound'
+    put:
+      tags:
+        - user
+      summary: Update user.
+      operationId: Update user with specific user id.
+      requestBody:
+        $ref: '#/components/requestBodies/UserRequestBody'
+      responses:
+        '200':
+          description: Successful operation.
+        '400':
+          $ref: '#/components/responses/400MissingParam'
+    delete:
+      tags:
+        - user
+      summary: Delete user.
+      operationId: Delete user with specific user id.
+      responses:
+        '200':
+          description: Successful operation.
+        '400':
+          $ref: '#/components/responses/400MissingParam'
+
+  /posts:
+    get:
+      tags:
+        - post
+      summary: Get posts.
+      responses:
+        '200':
+          description: Returns an array of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+    post:
+      tags:
+        - post
+      summary: Create post
+      description: Give an post object to request body to create a new post.
+      requestBody:
+        $ref: '#/components/requestBodies/PostRequestBody'
+      responses:
+        '201':
+          description: Successful create post.
+  /posts/{postId}:
+    parameters:
+      - in: path
+        name: postId
+        description: post's id
+        content:
+          application/json:
+            schema:
+              type: integer
+        required: true
+    get:
+      tags:
+        - post
+      summary: Get specific posts using id.
+      responses:
+        '200':
+          description: Return an post json object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+    put:
+      tags:
+        - post
+      summary: Update post.
+      operationId: Update post with specific post id.
+      requestBody:
+        $ref: '#/components/requestBodies/PostRequestBody'
+      responses:
+        '200':
+          description: Successful operation.
+        '400':
+          $ref: '#/components/responses/400MissingParam'
+    delete:
+      tags:
+        - post
+      summary: Delete post.
+      operationId: Delete post with specific post id.
+      responses:
+        '200':
+          description: Successful operation.
+        '400':
+          $ref: '#/components/responses/400MissingParam'
+
+  /comments/fetchCommentsByPost/{postId}:
+    get:
+      tags:
+        - comment
+      summary: Get comments from specific post.
+      parameters:
+        - in: path
+          name: postId
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Return an array of comments from an specific post.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/404EntitiesNotFound'
+  /comments/fetchCommentsByName/{name}:
+    get:
+      tags:
+        - comment
+      summary: Get comments from specific user.
+      parameters:
+        - in: path
+          name: name
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Return an array of comments from an specific user.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/404EntitiesNotFound'
+
+
+components:
+  schemas:
+    Comment:
+      type: object
+      properties:
+        commentId:
+          type: integer
+        postId:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+        body:
+          type: string
+        date:
+          type: string
+
+    Post:
+      properties:
+        postId:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        username:
+          type: string
+        date:
+          type: string
+
+    User:
+      properties:
+        userId:
+          type: integer
+        username:
+          type: string
+
+    ErrorBody:
+      properties:
+        timestamp:
+          type: string
+        status:
+          type: integer
+        message:
+          type: string
+        error:
+          type: string
+        path:
+          type: string
+      example:
+        "timestamp": "2021-01-24T10:18:19.073+00:00"
+        "status": 404
+        "error": "Not Found"
+        "message": "Data not found"
+        "path": "/error/path"
+
+  requestBodies:
+    UserRequestBody:
+      description: passing User to request body but exclude user id
+      content:
+        application/json:
+          schema:
+            properties:
+              username:
+                type: string
+          example:
+            username: "qvanphong"
+    PostRequestBody:
+      description: passing Post to request body but exclude id
+      content:
+        application/json:
+          schema:
+            properties:
+              title:
+                type: string
+              body:
+                type: string
+              username:
+                type: string
+          example:
+            title: "Lorem Ipsum"
+            body: "Lorem Ipsum dolor sit amet, consectuetur adipsdcing elit. Integer viverra lacinia purus, id vhicula mauris pulvinar nec."
+            username: "qvanphong"
+
+  responses:
+    404EntitiesNotFound:
+      description: 404 will return if data/entity not found or empty.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+
+    400MissingParam:
+      description: Bad request will be return if url missing some required parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorBody'
+          example:
+            "timestamp": "2021-01-24T10:18:19.073+00:00"
+            "status": 400
+            "error": "Bad Request"
+            "message": "Missing parameter: abc, xyz"
+            "path": "/error/path"
+
+
